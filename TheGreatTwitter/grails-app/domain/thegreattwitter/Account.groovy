@@ -1,3 +1,5 @@
+package thegreattwitter
+
 class Account {
 
     String accountName
@@ -22,7 +24,10 @@ class Account {
         password blank: false,
                 size: 8..16,
                 nullable: false,
-                validator: {
+                validator: { String password ->
+                    boolean hasUpperCase = false
+                    boolean hasLowerCase = false
+                    boolean hasDigit = false
                     char[] passwordArray = password.toCharArray();
                     for (int i= 0; i < passwordArray.length; i++) {
                         if (passwordArray[i].isUpperCase()) {
@@ -38,7 +43,6 @@ class Account {
                         }
                     }
                     return hasUpperCase && hasLowerCase && hasDigit
-
                 }
     }
 }

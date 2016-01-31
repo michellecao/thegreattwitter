@@ -1,6 +1,7 @@
 package thegreattwitter
 
 class Message {
+
     String messageText
     Account account
 

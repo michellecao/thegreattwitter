@@ -19,4 +19,8 @@ class MessageSpec extends Specification {
         expect: "fix me"
         true == false
     }
+
+    void "test message"() {
+        def message = new Message()
+    }
 }

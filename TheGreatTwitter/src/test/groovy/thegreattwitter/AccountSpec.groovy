@@ -15,8 +15,15 @@ class AccountSpec extends Specification {
     def cleanup() {
     }
 
-    void "test something"() {
-        expect:"fix me"
-            true == false
+//    void "test something"() {
+//        expect:"fix me"
+//            true == false
+//    }
+
+    void "test account"() {
+        def account = new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234")
+
+        expect:"true"
+        account.save() != null
     }
 }
