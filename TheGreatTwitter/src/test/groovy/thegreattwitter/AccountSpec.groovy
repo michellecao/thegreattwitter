@@ -75,4 +75,38 @@ class AccountSpec extends Specification {
         //  account2.errors.errorCount > 0
     }
 
+    def "test adding account with null values"() {
+        when:
+        def account = new Account(accountName: accountName, email: email, password: password)
+        def result = account.save();
+
+        then:
+        result == expected
+
+        where:
+        description            | accountName | email | password | expected
+        'accountName missing'  | ' '  | 'caoxx521@umn.edu' | 'Password1234' | null
+        'email missing'        | 'michelle' | ' ' | 'Password1234' | null
+        'password missing'       | 'michelle' | ' ' | ' ' | null
+    }
+
+    def 'saving a new account'() {
+        setup:
+        def account1 = new Account(accountName: 'michelle', email: 'caoxx521@umn.edu', password: 'Password1234')
+        def account2 = new Account(accountName: 'michelle', email: 'caoxx521@umn.edu', password: 'Password1234')
+
+        when:
+        account1.save()
+        account2.save()
+
+        then:
+        account1.errors.errorCount == 0
+        account1.id
+        account1.getAccountName() == 'michelle'
+        account1.get(account1.id).email == 'caoxx521@umn.edu'
+        account2.id
+        account1.get(account2.id).email == 'caoxx521@umn.edu'
+
+    }
+
 }
