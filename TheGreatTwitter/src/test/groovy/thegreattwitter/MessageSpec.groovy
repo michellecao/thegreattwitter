@@ -15,12 +15,12 @@ class MessageSpec extends Specification {
     def cleanup() {
     }
 
-    void "test something"() {
-        expect: "fix me"
-        true == false
+    void "M1. Saving a message with a valid account and message text will succeed"() {
+        Account account = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345');
+        def message = new Message (messageText: 'Message Text', account: account)
+        expect:"Message saved"
+        message.save() != null
     }
 
-    void "test message"() {
-        def message = new Message()
-    }
+
 }
