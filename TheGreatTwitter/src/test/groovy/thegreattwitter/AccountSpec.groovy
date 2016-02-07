@@ -18,7 +18,7 @@ class AccountSpec extends Specification {
     void "A1. Saving an account with a valid handle, email, password and name will succeed"() {
         def account = new Account(accountName: 'michelle', email: 'caoxx521@umn.edu', password: 'Test12345', handle: 'accountHandle');
         expect: "saving occurs"
-        account.save(flush : true) != null
+        account.save(flush: true) != null
         account.errors.errorCount == 0
         account.id != null
         account.getAccountName() == 'michelle'

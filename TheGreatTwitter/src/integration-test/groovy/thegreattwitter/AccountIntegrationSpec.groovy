@@ -9,45 +9,75 @@ import spock.lang.*
 @Rollback
 class AccountIntegrationSpec extends Specification {
 
-    def setup() {
-        def account1 = new Account(accountName: 'Test1', email: 'test@test.com', password: 'Test1234')
 
-        def account2 = new Account(accountName: 'Test2', email: 'test@test.com', password: 'Test1234')
-
-    }
-
-    def cleanup() {
-    }
-
-//    def 'A4. Saving account with a non-unique email or handle address must fail '() {
-//        setup:
-//        def account1 = new Account(accountName: 'Test1', email: 'test@test.com', password: 'Test1234')
-//        account1.save(flush: true)
-//        def account2 = new Account(accountName: 'Test2', email: 'test@test.com', password: 'Test1234')
-//        when:
-//        account2.save(flush: true)
-//
-//        then:
-//        account1.errors.errorCount == 0
-//        account1.id
-//        account1.getAccountName() == 'Test1'
-//        account1.getEmail() == 'test@test.com'
-//        account2.errors.errorCount > 0
-//    }
-
-    def 'F1. An account may have multiple followers '() {
+    def 'Saving an account with a non-unique email must fail '() {
         setup:
-        def account1 = new Account(accountName: 'Test1', email: 'test@test.com', password: 'Test1234')
-        account1.save(flush: true)
-        def follower = new Account(accountName: 'Test2', email: 'test@test.com', password: 'Test1234')
-        follower.save(flush: true)
+        def coldPlay = new Account(accountName: 'ColdPlay', email: 'coldPlay@test.com', password: 'superBowl123',
+                handle: '@Coldplay')
+        coldPlay.save(flush: true)
+        def fakeColdPlay = new Account(accountName: 'coldPlay1', email: 'coldPlay@test.com', password: 'Test1234',
+                handle: '@Coldplay1')
         when:
-        follower.addToFollowing(account1)
-        follower.save(flush: true)
-        account1.addToFollowers(follower)
-        account1.save(flush: true)
+        fakeColdPlay.save(flush: true)
+
         then:
-        account1.getFollowers() == follower
-        follower.getFollowing() == account1
+        coldPlay.errors.errorCount == 0
+        coldPlay.id
+        coldPlay.getAccountName() == 'ColdPlay'
+        coldPlay.getEmail() == 'coldPlay@test.com'
+        fakeColdPlay.errors.errorCount > 0
+
+        cleanup:
+        coldPlay.delete(flush: true)
+
     }
+
+    def 'Saving an account with a non-unique handle must fail '() {
+        setup:
+        def coldPlay = new Account(accountName: 'ColdPlay', email: 'coldPlay@test.com', password: 'superBowl123',
+                handle: '@Coldplay')
+        coldPlay.save(flush: true)
+        def fakeColdPlay = new Account(accountName: 'coldPlay1', email: 'coldPlay1@test.com', password: 'Test1234',
+                handle: '@Coldplay')
+        when:
+        fakeColdPlay.save(flush: true)
+
+        then:
+        coldPlay.errors.errorCount == 0
+        coldPlay.id
+        coldPlay.getAccountName() == 'ColdPlay'
+        coldPlay.getEmail() == 'coldPlay@test.com'
+        fakeColdPlay.errors.errorCount > 0
+
+        cleanup:
+        coldPlay.delete(flush: true)
+    }
+
+
+    def 'An account may have multiple followers'() {
+        setup:
+        def bobMarley = new Account(accountName: 'Bob Marley', email: 'bobMarley@marley.com', password: 'Password123'
+                , handle: 'Bob Marley')
+        bobMarley.save(flush: true)
+        def coldPlay = new Account(accountName: 'ColdPlay', email: 'coldPlay@test.com', password: 'superBowl123',
+                handle: 'Music Group')
+        coldPlay.save(flush: true)
+        when:
+        bobMarley.addToFollowers(coldPlay);
+        coldPlay.addToFollowing(bobMarley);
+        then:
+        bobMarley.getFollowers().size() == 1
+        bobMarley.getFollowing() == null
+        bobMarley.getFollowers().getAt(0) == coldPlay
+        coldPlay.getFollowing().size() == 1
+        coldPlay.getFollowing().getAt(0) == bobMarley
+        cleanup:
+        bobMarley.setFollowers(null)
+        coldPlay.setFollowing(null)
+        bobMarley.delete(flush: true)
+        coldPlay.delete(flush: true)
+
+    }
+
+
 }
