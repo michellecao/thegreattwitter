@@ -8,8 +8,8 @@ class Message {
     static constraints = {
         //Message text is required to be non-blank and 40 characters or less
         messageText blank: false,
-                    nullable: false,
-                    maxSize: 40
+                nullable: false,
+                maxSize: 40
         account nullable: false
     }
 }

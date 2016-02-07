@@ -7,10 +7,10 @@ class Account {
     String password
 
 
-
+    static hasMany = [followers: Account, following: Account]
     static constraints = {
         accountName blank: false,
-                    nullable: false
+                nullable: false
 
         //unique and valid email
         email unique: true,
@@ -29,7 +29,7 @@ class Account {
                     boolean hasLowerCase = false
                     boolean hasDigit = false
                     char[] passwordArray = password.toCharArray();
-                    for (int i= 0; i < passwordArray.length; i++) {
+                    for (int i = 0; i < passwordArray.length; i++) {
                         if (passwordArray[i].isUpperCase()) {
                             hasUpperCase = true
                             continue

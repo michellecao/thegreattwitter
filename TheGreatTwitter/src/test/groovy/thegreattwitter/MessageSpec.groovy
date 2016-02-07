@@ -17,8 +17,8 @@ class MessageSpec extends Specification {
 
     void "M1. Saving a message with a valid account and message text will succeed"() {
         Account account = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345');
-        def message = new Message (messageText: 'Message Text', account: account)
-        expect:"Message saved"
+        def message = new Message(messageText: 'Message Text', account: account)
+        expect: "Message saved"
         message.save() != null
     }
 
@@ -26,7 +26,7 @@ class MessageSpec extends Specification {
     def "test adding messages"() {
         when:
         //def account1 = new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234")
-        def message = new Message(account: account, messageText : messageText)
+        def message = new Message(account: account, messageText: messageText)
 
         def result = message.save();
 
@@ -35,10 +35,10 @@ class MessageSpec extends Specification {
 
         where:
 
-        description            | account | messageText | expected
-        'account empty'        | null | 'first message on twitter ' | null
-        'messageText empty'    | new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234")| ' ' | null
-        'message longer than 40 characters' | new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234")| 'This is my fist twitter message ever, this is to test that if it will fail when the length of the message exceeds the limit specified' | null
+        description                         | account                                                                                   | messageText                                                                                                                             | expected
+        'account empty'                     | null                                                                                      | 'first message on twitter '                                                                                                             | null
+        'messageText empty'                 | new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234") | ' '                                                                                                                                     | null
+        'message longer than 40 characters' | new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234") | 'This is my fist twitter message ever, this is to test that if it will fail when the length of the message exceeds the limit specified' | null
     }
 
 }
