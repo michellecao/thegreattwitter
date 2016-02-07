@@ -16,28 +16,40 @@ class AccountSpec extends Specification {
     }
 
     void "A1. Saving an account with a valid handle, email, password and name will succeed"() {
-        def account = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345');
+        def account = new Account(accountName: 'michelle', email: 'caoxx521@umn.edu', password: 'Test12345', handle: 'accountHandle');
         expect: "saving occurs"
-        account.save() != null
+        account.save(flush : true) != null
+        account.errors.errorCount == 0
+        account.id != null
+        account.getAccountName() == 'michelle'
+        account.get(account.id).email == 'caoxx521@umn.edu'
+        account.getPassword() == 'Test12345'
+        account.getHandle() == 'accountHandle'
+        account.getDateCreated() != null
+
     }
 
     def 'A2. Saving an account missing any of the required values of handle email, password and name will fail'() {
         when:
-        def account = new Account(accountName: accountName, email: email, password: password)
+        def account = new Account(accountName: accountName, email: email, password: password, handle: handle,)
         def result = account.save()
 
         then:
         result == expected
 
         where:
-        description           | accountName   | email           | password   | expected
-        'AccountName missing' | null          | 'test@test.com' | 'Test1234' | null
-        'Email missing'       | 'TestAccount' | null            | 'Test1234' | null
-        'Invalid email'       | 'TestAccount' | 'testemail'     | 'Test1234' | null
-        'Password missing'    | 'TestAccount' | 'test@test.com' | ''         | null
+        description           | accountName   | email           | password   | handle          | expected
+        'AccountName missing' | null          | 'test@test.com' | 'Test1234' | 'accountHandel' | null
+        'Email missing'       | 'TestAccount' | null            | 'Test1234' | 'accountHandel' | null
+        'Invalid email'       | 'TestAccount' | 'testemail'     | 'Test1234' | 'accountHandel' | null
+        'Password missing'    | 'TestAccount' | 'test@test.com' | ''         | 'accountHandel' | null
+        'handle missing'      | 'TestAccount' | 'test@test.com' | 'Test1234' | ''              | null
 
     }
-
+    //Passwords must be 8-16 characters and have
+    // at least 1 number,
+    // at least one lower-case letter,
+    // at least 1 upper-case letter
     def 'A3. Saving an account with an invalid password will fail'() {
         when:
         def account = new Account(accountName: 'Test', email: 'test@test.com', password: password)
@@ -59,54 +71,18 @@ class AccountSpec extends Specification {
         'Password is null'                   | null                 | null
     }
 
-    def 'A4. Saving account with a non-unique email or handle address must fail '() {
-        setup:
-        def account1 = new Account(accountName: 'Test1', email: 'test@test.com', password: 'Test1234')
-        account1.save(flush: true)
-        def account2 = new Account(accountName: 'Test2', email: 'test@test.com', password: 'Test1234')
-        when:
-        account2.save(flush: true)
-
-        then:
-        account1.errors.errorCount == 0
-        account1.id
-        account1.getAccountName() == 'Test1'
-        account1.getEmail() == 'test@test.com'
-        account2.errors.errorCount > 0
-    }
-
     def "test adding account with null values"() {
         when:
-        def account = new Account(accountName: accountName, email: email, password: password)
+        def account = new Account(accountName: accountName, email: email, password: password, handle: handle)
         def result = account.save();
 
         then:
         result == expected
 
         where:
-        description           | accountName | email              | password       | expected
-        'accountName missing' | ' '         | 'caoxx521@umn.edu' | 'Password1234' | null
-        'email missing'       | 'michelle'  | ' '                | 'Password1234' | null
-        'password missing'    | 'michelle'  | ' '                | ' '            | null
+        description           | accountName | email              | password       | handle          | expected
+        'accountName missing' | ' '         | 'caoxx521@umn.edu' | 'Password1234' | 'accountHandel' | null
+        'email missing'       | 'michelle'  | ' '                | 'Password1234' | 'accountHandel' | null
+        'password missing'    | 'michelle'  | ' '                | ' '            | 'accountHandel' | null
     }
-
-    def 'saving a new account'() {
-        setup:
-        def account1 = new Account(accountName: 'michelle', email: 'caoxx521@umn.edu', password: 'Password1234')
-        def account2 = new Account(accountName: 'michelle', email: 'caoxx521@umn.edu', password: 'Password1234')
-
-        when:
-        account1.save()
-        account2.save()
-
-        then:
-        account1.errors.errorCount == 0
-        account1.id
-        account1.getAccountName() == 'michelle'
-        account1.get(account1.id).email == 'caoxx521@umn.edu'
-        account2.id
-        account1.get(account2.id).email == 'caoxx521@umn.edu'
-
-    }
-
 }

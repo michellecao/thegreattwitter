@@ -5,9 +5,14 @@ class Account {
     String accountName
     String email
     String password
+    String handle
+    Date dateCreated
 
 
     static hasMany = [followers: Account, following: Account]
+    static mapping = {
+        autoTimestamp true
+    }
     static constraints = {
         accountName blank: false,
                 nullable: false
@@ -17,6 +22,10 @@ class Account {
                 blank: false,
                 email: true,
                 nullable: false
+        //unique handle
+        handle unique: true,
+                blank: false,
+             nullable: false
         //Passwords must be 8-16 characters
         //and have at least 1 number,
         // at least one lower-case letter,

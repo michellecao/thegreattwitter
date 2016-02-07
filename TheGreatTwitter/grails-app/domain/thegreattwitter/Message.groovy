@@ -4,6 +4,7 @@ class Message {
 
     String messageText
     Account account
+    Date dateCreated
 
     static constraints = {
         //Message text is required to be non-blank and 40 characters or less
