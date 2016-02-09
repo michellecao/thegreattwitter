@@ -1,5 +1,6 @@
 package thegreattwitter
 
+import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 
@@ -7,6 +8,7 @@ import spock.lang.Specification
  * See the API for {@link grails.test.mixin.domain.DomainClassUnitTestMixin} for usage instructions
  */
 @TestFor(Message)
+@Mock(Account)
 class MessageSpec extends Specification {
 
     def setup() {
@@ -17,25 +19,36 @@ class MessageSpec extends Specification {
 
     def "Saving a message with a valid account and message text will succeed"() {
         given:
-        Account account = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345');
+        Account account = new Account(accountName: 'Test', email: 'test@test.com',
+                password: 'Test12345', handle: '@Test');
         def message = new Message(messageText: 'Message Text', account: account)
         when:
-        message.save()
-
+        account.save()
+        if (account.id) {
+            message.save()
+        }
         then: "Message saved"
+        account.id
+        !account.errors.hasErrors()
         message.id
         !message.errors.hasErrors()
     }
 
     def "Fails to save a message when required message text field is missing"() {
         given:
-        Account account = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345');
+        Account account = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345',
+                handle: "@Test");
         def message = new Message(account: account)
 
         when:
-        message.save()
+        account.save()
+        if (account.id) {
+            message.save()
+        }
 
         then:
+        account.id
+        !account.errors.hasErrors()
         !message.id
         message.hasErrors()
         message.errors.getFieldError('messageText')
@@ -55,22 +68,27 @@ class MessageSpec extends Specification {
         message.errors.getFieldError('account')
     }
 
-    def "Test adding messages"() {
+    def "Message text is required to be non-blank and 40 characters or less "() {
         when:
-        def message = new Message(account: account, messageText: messageText)
+        Account testAccount = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345',
+                handle: "@Test");
+        testAccount.save()
+        def result = null;
+        if (testAccount.id) {
+            def message = new Message(account: testAccount, messageText: messageText)
+            result = message.save();
 
-        def result = message.save();
+        }
 
         then:
         result == expected
 
         where:
 
-        description                         | account                                                                                   | messageText                                                                                                                             | expected
-        'account empty'                     | null                                                                                      | 'first message on twitter '                                                                                                             | null
-        'messageText blank'                 | new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234") | ' '                                                                                                                                     | null
-        'messageText empty'                 | new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234") | null                                                                                                                                    | null
-        'message longer than 40 characters' | new Account(accountName: "michelle", email: "caoxx521@umn.edu", password: "Password1234") | 'This is my fist twitter message ever, this is to test that if it will fail when the length of the message exceeds the limit specified' | null
+        description                              | messageText                                                                                                                             | expected
+        'empty message text'                     | null                                                                                                                                    | null
+        'message text longer than 40 characters' | 'This is my fist twitter message ever, this is to test that if it will fail when the length of the message exceeds the limit specified' | null
+        'blank message text'                     | '   '                                                                                                                                   | null
 
     }
 
