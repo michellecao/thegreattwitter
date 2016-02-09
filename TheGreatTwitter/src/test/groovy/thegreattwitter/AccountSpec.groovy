@@ -71,7 +71,7 @@ class AccountSpec extends Specification {
         'Password is null'                   | null                 | null
     }
 
-    def "test adding account with null values"() {
+    def "Test adding account with null values"() {
         when:
         def account = new Account(accountName: accountName, email: email, password: password, handle: handle)
         def result = account.save();
