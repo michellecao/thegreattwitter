@@ -83,7 +83,7 @@ class AccountIntegrationSpec extends Specification {
         then:
         bobMarley.getFollowers().size() == 2
         bobMarley.getFollowing() == null
-        bobMarley.getFollowers().getAt(0) == coldPlay
+        bobMarley.getFollowers().contains (coldPlay)
         bobMarley.getFollowers().contains(beyonce)
         coldPlay.getFollowing().size() == 1
         coldPlay.getFollowing().getAt(0) == bobMarley
