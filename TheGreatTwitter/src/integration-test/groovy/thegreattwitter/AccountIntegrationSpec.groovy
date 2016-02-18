@@ -11,6 +11,7 @@ class AccountIntegrationSpec extends Specification {
 
     def 'Saving an account with a non-unique email must fail '() {
         setup:
+        def accountsBeforeSave = Account.count()
         def coldPlay = TestUtil.createAndSaveAccount('coldPlay@test.com', '@Coldplay')
         def fakeColdPlay = new Account(accountName: 'coldPlay1', email: 'coldPlay@test.com', password: 'Test1234',
                 handle: '@Coldplay1')
@@ -23,6 +24,7 @@ class AccountIntegrationSpec extends Specification {
         coldPlay.getAccountName() == 'TestAccount'
         coldPlay.getEmail() == 'coldPlay@test.com'
         fakeColdPlay.errors.errorCount > 0
+        Account.count() == accountsBeforeSave + 1
 
         cleanup:
         coldPlay.delete(flush: true)
@@ -31,6 +33,7 @@ class AccountIntegrationSpec extends Specification {
 
     def 'Saving an account with a non-unique handle must fail '() {
         setup:
+        def accountsBeforeSave = Account.count()
         def coldPlay = TestUtil.createAndSaveAccount('coldPlay@test.com', '@Coldplay')
         def fakeColdPlay = new Account(accountName: 'coldPlay1', email: 'coldPlay1@test.com', password: 'Test1234',
                 handle: '@Coldplay')
@@ -43,6 +46,7 @@ class AccountIntegrationSpec extends Specification {
         coldPlay.getAccountName() == 'TestAccount'
         coldPlay.getEmail() == 'coldPlay@test.com'
         fakeColdPlay.errors.errorCount > 0
+        Account.count() == accountsBeforeSave + 1
 
         cleanup:
         coldPlay.delete(flush: true)
@@ -58,16 +62,15 @@ class AccountIntegrationSpec extends Specification {
 
         then:
         bobMarley.getFollowers().size() == 1
-        bobMarley.getFollowing() == null
+        !bobMarley.getFollowing()
         bobMarley.getFollowers().getAt(0) == coldPlay
         coldPlay.getFollowing().size() == 1
         coldPlay.getFollowing().getAt(0) == bobMarley
-        coldPlay.getFollowers() == null
+        !coldPlay.getFollowers()
 
         cleanup:
         TestUtil.deleteAccount(bobMarley)
         TestUtil.deleteAccount(coldPlay)
-
     }
 
 
@@ -80,22 +83,23 @@ class AccountIntegrationSpec extends Specification {
         when:
         TestUtil.addToFollowers(bobMarley, coldPlay)
         TestUtil.addToFollowers(bobMarley, beyonce)
+
         then:
         bobMarley.getFollowers().size() == 2
-        bobMarley.getFollowing() == null
+        !bobMarley.getFollowing()
         bobMarley.getFollowers().contains (coldPlay)
         bobMarley.getFollowers().contains(beyonce)
         coldPlay.getFollowing().size() == 1
         coldPlay.getFollowing().getAt(0) == bobMarley
-        coldPlay.getFollowers() == null
+        !coldPlay.getFollowers()
         beyonce.getFollowing().size() == 1
         beyonce.getFollowing().getAt(0) == bobMarley
-        beyonce.getFollowers() == null
+        !beyonce.getFollowers()
+
         cleanup:
         TestUtil.deleteAccount(bobMarley)
         TestUtil.deleteAccount(beyonce)
         TestUtil.deleteAccount(coldPlay)
-
     }
 
     def 'Two accounts may follow each others'() {
@@ -118,6 +122,7 @@ class AccountIntegrationSpec extends Specification {
         coldPlay.getFollowing().size() == 1
         coldPlay.getFollowing().getAt(0) == bobMarley
         coldPlay.getFollowers().getAt(0) == bobMarley
+
         cleanup:
         TestUtil.deleteAccount(bobMarley)
         TestUtil.deleteAccount(coldPlay)
