@@ -3,10 +3,9 @@ package thegreattwitter
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import spock.lang.Specification
+import spock.lang.Unroll
 
-/**
- * See the API for {@link grails.test.mixin.domain.DomainClassUnitTestMixin} for usage instructions
- */
+@Unroll
 @TestFor(Message)
 @Mock(Account)
 class MessageSpec extends Specification {
@@ -68,27 +67,26 @@ class MessageSpec extends Specification {
         message.errors.getFieldError('account')
     }
 
-    def "Message text is required to be non-blank and 40 characters or less "() {
+    def "Message text is required to be non-blank and 40 characters or less: #description"() {
         when:
+        def messagesBeforeSave = Message.count()
         Account testAccount = new Account(accountName: 'Test', email: 'test@test.com', password: 'Test12345',
                 handle: "@Test");
         testAccount.save()
-        def result = null;
-        if (testAccount.id) {
-            def message = new Message(account: testAccount, messageText: messageText)
-            result = message.save();
-
-        }
+        def message = new Message(account: testAccount, messageText: messageText)
+        message.save();
 
         then:
-        result == expected
+        testAccount
+        message.hasErrors()
+        Message.count == messagesBeforeSave
+
 
         where:
-
-        description                              | messageText                                                                                                                             | expected
-        'empty message text'                     | null                                                                                                                                    | null
-        'message text longer than 40 characters' | 'This is my fist twitter message ever, this is to test that if it will fail when the length of the message exceeds the limit specified' | null
-        'blank message text'                     | '   '                                                                                                                                   | null
+        description                              | messageText
+        'empty message text'                     | null
+        'message text longer than 40 characters' | 'a'*41
+        'blank message text'                     | '   '
 
     }
 
