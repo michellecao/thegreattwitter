@@ -1,5 +1,8 @@
 package thegreattwitter
 
+import grails.rest.Resource
+
+@Resource (uri='/messages', formats=['json', 'xml'])
 class Message {
 
     String messageText
