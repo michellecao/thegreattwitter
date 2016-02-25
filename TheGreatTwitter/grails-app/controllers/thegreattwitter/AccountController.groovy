@@ -15,7 +15,7 @@ class AccountController extends RestfulController {
 
         if (!account) {
             response.status = 404
-            respond new Expando(success: false, message: 'auctionUser not provided')
+            respond new Expando(success: false, message: 'Account not provided')
             return
         }
 
