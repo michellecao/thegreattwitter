@@ -1,4 +1,3 @@
-
 TheGreatTwitter is an application that works like a simplified Twitter.
 
 The domain model supports accounts, messages, and account following.
@@ -16,3 +15,9 @@ Steps to commit your files:
 Additional useful git commands:
 git reset --hard origin/master
 git tag -a tag -m “my tag”
+
+====to merge local changes
+git stash
+git pull
+git stash pop
+then check through gitgui or in intelij
