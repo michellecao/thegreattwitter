@@ -6,6 +6,7 @@ import grails.transaction.Transactional
 class AccountController extends RestfulController {
     static responseFormats = ['json', 'xml']
     static allowedMethods = [getAccount: "GET", save: "POST", update: "PUT"]
+
     AccountController() {
         super(Account)
     }
@@ -15,7 +16,7 @@ class AccountController extends RestfulController {
 
         if (!account) {
             response.status = 404
-            respond new Expando(success: false, message: 'Account not provided')
+        respond new Expando(success: false, message: 'Account not provided')
             return
         }
 
