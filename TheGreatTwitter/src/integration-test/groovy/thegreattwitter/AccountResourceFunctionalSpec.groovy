@@ -1,6 +1,7 @@
 package thegreattwitter
 
 import geb.spock.GebSpec
+import grails.converters.JSON
 import grails.test.mixin.integration.Integration
 import groovyx.net.http.RESTClient
 import spock.lang.Shared
@@ -8,29 +9,52 @@ import spock.lang.Stepwise
 
 @Integration
 @Stepwise
-class AccountResourceFunctionalSpec  extends GebSpec {
+class AccountResourceFunctionalSpec extends GebSpec {
 
     RESTClient restClient
     @Shared
-    accountId
+    def accountId
 
     def setup() {
-        restClient = new RESTClient (baseUrl)
+        restClient = new RESTClient(baseUrl)
     }
 
-    def 'get all accounts resources' () {
-        when :
+    def 'Get all accounts resources'() {
+        when:
         def resp = restClient.get(path: '/accounts')
 
         then:
         resp.status == 200
+        resp.data.size() == 0
 
     }
-    //def account = new Account (....)
-    //def json - account as JSON
-    // restClient.post (path: '/accounts', body: json as String, requestContentType:' application/json')
-    //
-    // !!(punchId = resp.data.id)
 
-    
+    def 'Save an account'() {
+        when:
+        def account = new Account(accountName: "Prince", email: "Prince@prince.com",
+                password: "Minneapolis1234", handle: "@Prince")
+        def json = account as JSON
+        def resp = restClient.post(path: '/accounts', body: json as String, requestContentType: 'application/json')
+
+        then:
+        resp.status == 200
+        resp.data.size() > 0
+        !!(accountId = resp.data.properties.account.id)
+    }
+
+    def 'Get the created account'() {
+        when:
+        def path = '/accounts/' + accountId
+        def resp = restClient.get(path: path as String)
+        then:
+        resp.status == 200
+        resp.data.id == accountId
+        resp.data.accountName == 'Prince'
+        resp.data.email == 'Prince@prince.com'
+        resp.data.handle == '@Prince'
+    }
+
+
+
+
 }
