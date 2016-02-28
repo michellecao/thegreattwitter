@@ -1,14 +1,31 @@
 package thegreattwitter
 
+import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.transaction.Transactional
 
-class AccountController extends RestfulController {
+class AccountController extends RestfulController<Account> {
     static responseFormats = ['json', 'xml']
-    static allowedMethods = [save: "POST", update: "PUT"]
+    static allowedMethods = [show: "GET", save: "POST", update: "PUT"]
 
     AccountController() {
         super(Account)
+    }
+
+    @Transactional
+    def show() {
+
+        if (params.id) {
+            def byHandle = Account.findByHandle(params.id)
+            if (byHandle != null)
+                render byHandle as JSON
+            else {
+                render Account.findById(params.id) as JSON
+            }
+        } else {
+            render Account.list()
+        }
+
     }
 
     @Transactional
@@ -27,6 +44,8 @@ class AccountController extends RestfulController {
         }
 
         account.save(flush: true, failOnError: true)
+        response.status = 201
+        render account as JSON
         respond new Expando(success: true, message: 'Account created', account : account)
     }
 

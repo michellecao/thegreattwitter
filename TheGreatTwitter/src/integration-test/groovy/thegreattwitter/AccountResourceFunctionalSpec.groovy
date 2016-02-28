@@ -14,6 +14,8 @@ class AccountResourceFunctionalSpec extends GebSpec {
     RESTClient restClient
     @Shared
     def accountId
+    @Shared
+    def accountHandle
 
     def setup() {
         restClient = new RESTClient(baseUrl)
@@ -37,12 +39,13 @@ class AccountResourceFunctionalSpec extends GebSpec {
         def resp = restClient.post(path: '/accounts', body: json as String, requestContentType: 'application/json')
 
         then:
-        resp.status == 200
+        resp.status == 201
         resp.data.size() > 0
-        !!(accountId = resp.data.properties.account.id)
+        !!(accountId = resp.data.id)
+        !!(accountHandle = resp.data.handle)
     }
 
-    def 'Get the created account'() {
+    def 'Get the created account by id'() {
         when:
         def path = '/accounts/' + accountId
         def resp = restClient.get(path: path as String)
@@ -53,6 +56,21 @@ class AccountResourceFunctionalSpec extends GebSpec {
         resp.data.email == 'Prince@prince.com'
         resp.data.handle == '@Prince'
     }
+
+    def 'Get the created account by handle'() {
+        when:
+        def path = '/accounts/' + accountHandle
+        def resp = restClient.get(path: path as String)
+        then:
+        resp.status == 200
+        resp.data.id == accountId
+        resp.data.accountName == 'Prince'
+        resp.data.email == 'Prince@prince.com'
+        resp.data.handle == '@Prince'
+    }
+
+
+
 
 
 
