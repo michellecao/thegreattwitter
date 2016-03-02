@@ -23,7 +23,7 @@ class AccountController extends RestfulController<Account> {
                 render Account.findById(params.id) as JSON
             }
         } else {
-            render Account.list()
+            render Account.list() as JSON
         }
     }
 

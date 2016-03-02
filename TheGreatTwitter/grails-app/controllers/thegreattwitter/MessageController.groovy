@@ -7,13 +7,13 @@ import grails.transaction.Transactional
 class MessageController extends RestfulController<Message> {
 
     static responseFormats = ['json', 'xml']
-    static allowedMethods = [save: 'POST']
+    static allowedMethods = [save: 'POST', getRecent: 'GET']
+
     MessageController() {
         super(Message)
     }
 
 
-    @Override
     protected Message queryForResource(Serializable id) {
         def accountId = params.accountId
         Message.where {
@@ -22,6 +22,10 @@ class MessageController extends RestfulController<Message> {
     }
 
 
+    def index(Integer max) {
+        params.max = max ?: 10
+        respond Message.list(params), model: [messagesCount: Message.count()]
+    }
 
     @Transactional
     def save(Message message) {
@@ -41,6 +45,13 @@ class MessageController extends RestfulController<Message> {
         message.save(flush: true, failOnError: true)
         response.status = 201
         render message as JSON
-        respond new Expando(success: true, notification: 'Message created', message : message)
+        respond new Expando(success: true, notification: 'Message created', message: message)
     }
+
+    def getRecent() {
+        render Message.list(max: params.max ? params.max : 10, offset: params.offset,
+                sort: "dateCreated", order: "desc") as JSON
+
+    }
+
 }

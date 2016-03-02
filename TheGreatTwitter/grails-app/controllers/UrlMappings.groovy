@@ -15,6 +15,7 @@ class UrlMappings {
 //        "/messages"(resources: 'message')
         "/accounts"(resources: 'account') {
             "/messages"(resources: 'message')
+            "/messages/recent"(resources: 'message', action: "getRecent", method: "GET")
         }
 
     }

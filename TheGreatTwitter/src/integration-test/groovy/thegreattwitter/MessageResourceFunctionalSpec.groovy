@@ -58,12 +58,24 @@ class MessageResourceFunctionalSpec extends GebSpec {
     def 'Save a message using account handle'() {
 
         when:
-        def message = new Message(messageText: 'Message Text', account: savedAccount)
+        def message = new Message(messageText: 'Message Text with handle', account: savedAccount)
         def messageAsJson = message as JSON
         def messageResp = restClient.post(path: '/accounts/${accountHandle}/messages',
                 body: messageAsJson as String, requestContentType: 'application/json')
         then:
         messageResp.status == 201
+        messageResp.data.size() > 0
+
+    }
+
+    def 'Get recent messages'() {
+
+        when:
+        def messageResp = restClient.get(path: '/accounts/${accountHandle}/messages/recent',
+                requestContentType: 'application/json')
+
+        then:
+        messageResp.status == 200
         messageResp.data.size() > 0
 
     }
