@@ -1,15 +1,27 @@
 package thegreattwitter
 
+import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.transaction.Transactional
 
-class MessageController extends RestfulController {
+class MessageController extends RestfulController<Message> {
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: 'POST']
     MessageController() {
         super(Message)
     }
+
+
+    @Override
+    protected Message queryForResource(Serializable id) {
+        def accountId = params.accountId
+        Message.where {
+            id == id && account.id == accountId
+        }.find()
+    }
+
+
 
     @Transactional
     def save(Message message) {
@@ -26,7 +38,9 @@ class MessageController extends RestfulController {
             return
         }
 
-        message.save flush: true, failOnError: true
-        respond new Expando(success: true, notification: 'Message created', message: message)
+        message.save(flush: true, failOnError: true)
+        response.status = 201
+        render message as JSON
+        respond new Expando(success: true, notification: 'Message created', message : message)
     }
 }

@@ -12,9 +12,9 @@ class AccountController extends RestfulController<Account> {
         super(Account)
     }
 
+    @Override
     @Transactional
     def show() {
-
         if (params.id) {
             def byHandle = Account.findByHandle(params.id)
             if (byHandle != null)
@@ -25,7 +25,6 @@ class AccountController extends RestfulController<Account> {
         } else {
             render Account.list()
         }
-
     }
 
     @Transactional
