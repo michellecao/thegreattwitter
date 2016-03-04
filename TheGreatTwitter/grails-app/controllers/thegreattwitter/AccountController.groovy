@@ -6,7 +6,7 @@ import grails.transaction.Transactional
 
 class AccountController extends RestfulController<Account> {
     static responseFormats = ['json', 'xml']
-    static allowedMethods = [show: "GET", save: "POST", update: "PUT"]
+    static allowedMethods = [show: "GET", save: "POST", follow: "POST"]
 
     AccountController() {
         super(Account)
@@ -31,7 +31,7 @@ class AccountController extends RestfulController<Account> {
 
         if (!account) {
             response.status = 404
-        respond new Expando(success: false, message: 'Account not provided')
+            respond new Expando(success: false, message: 'Account not provided')
             return
         }
 
@@ -44,7 +44,28 @@ class AccountController extends RestfulController<Account> {
         account.save(flush: true, failOnError: true)
         response.status = 201
         render account as JSON
-        respond new Expando(success: true, message: 'Account created', account : account)
+        respond new Expando(success: true, message: 'Account created', account: account)
+    }
+
+    @Transactional
+    def follow(Account follower) {
+        if (!follower) {
+            response.status = 204
+        }
+        if (follower.getErrors().errorCount > 0) {
+            response.status = 500
+        }
+        def accountId = params.accountId
+        Account account = Account.findById(accountId)
+        if (!account) {
+            response.status = 404
+            respond new Expando(success: false, message: 'Account not provided')
+            return
+        }
+        account.addToFollowers(follower)
+        follower.addToFollowing(account)
+        response.status = 200
+        respond new Expando(success: true, account: account, follower: follower)
     }
 
 }

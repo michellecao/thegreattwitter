@@ -17,6 +17,13 @@ class AccountResourceFunctionalSpec extends GebSpec {
     @Shared
     def accountHandle
 
+    @Shared
+    def bobAccount
+    @Shared
+    def bobAccountId
+    @Shared
+    def bobAccountHandle
+
     def setup() {
         restClient = new RESTClient(baseUrl)
     }
@@ -69,10 +76,39 @@ class AccountResourceFunctionalSpec extends GebSpec {
         resp.data.handle == '@Prince'
     }
 
+    def 'Follow an account'() {
+        when:
+        def bobMarley = new Account(accountName: 'Bob Marley', email: 'bobMarley@marley.com', password: 'Password123'
+                , handle: 'Bob Marley')
+        def json = bobMarley as JSON
+        def resp = restClient.post(path: '/accounts', body: json as String, requestContentType: 'application/json')
 
 
+        then:
+        resp.status == 201
+        resp.data.size() > 0
+        !!(bobAccount = resp.data)
+        !!(bobAccountId = resp.data.id)
+        !!(bobAccountHandle = resp.data.handle)
+
+        when:
+        def path = '/accounts/' + accountId + '/follow'
+        bobAccount.id = bobAccountId
+        def bobJson = bobAccount as JSON
+        def updateResp = restClient.post(path: path as String, body: bobJson as String,
+                requestContentType: 'application/json')
+
+        then:
+        updateResp.status == 200
+        updateResp.data.properties.account.followers.size() == 1
+        updateResp.data.properties.account.followers[0].id == bobAccountId
+        updateResp.data.properties.account.following.size() == 0
+        updateResp.data.properties.follower.followers == null
+        updateResp.data.properties.follower.following.size() == 1
+        updateResp.data.properties.follower.following[0].id == accountId
 
 
+    }
 
 
 }

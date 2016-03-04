@@ -7,7 +7,7 @@ import grails.transaction.Transactional
 class MessageController extends RestfulController<Message> {
 
     static responseFormats = ['json', 'xml']
-    static allowedMethods = [save: 'POST', getRecent: 'GET', search:'GET']
+    static allowedMethods = [save: 'POST', getRecent: 'GET', search: 'GET']
 
     MessageController() {
         super(Message)
@@ -36,6 +36,15 @@ class MessageController extends RestfulController<Message> {
             return
         }
 
+        if (params.accountId) {
+            def byHandle = Account.findByHandle(params.accountId)
+            if (byHandle != null) {
+                message.account = byHandle
+            } else {
+                message.account = Account.findById(params.accountId)
+            }
+        }
+
         if (message.hasErrors()) {
             response.status = 500
             respond new Expando(success: false, notification: 'has errors', errors: message.errors)
@@ -54,14 +63,15 @@ class MessageController extends RestfulController<Message> {
 
     }
 
+    @Transactional
     def search() {
         if (!params.keyword) {
             response.status = 500
             respond new Expando(success: false, notification: 'Missing Keyword Parameter', errors: message.errors)
             return
         }
-       def keyword = params.keyword
-        def results =  Message.where {
+        def keyword = params.keyword
+        def results = Message.where {
             messageText ilike keyword
         }.find()
         def accountId = params.accountId

@@ -19,11 +19,12 @@ class MessageResourceFunctionalSpec extends GebSpec {
     @Shared
     def messageId
     @Shared
-    def savedAccount
+    Account savedAccount
 
     def setup() {
         restClient = new RESTClient(baseUrl)
     }
+
     def 'Save an account'() {
         when:
         def account = new Account(accountName: "Prince", email: "Prince@prince.com",
@@ -34,37 +35,48 @@ class MessageResourceFunctionalSpec extends GebSpec {
         then:
         resp.status == 201
         resp.data.size() > 0
+        resp.data.id == 1
+        resp.data.handle == "@Prince"
         !!(savedAccount = resp.data)
         !!(accountId = resp.data.id)
         !!(accountHandle = resp.data.handle)
+
     }
 
     def 'Save a message using account id'() {
 
         when:
-
+        def path = '/accounts/' + accountId
+//        def resp = restClient.get(path: path as String)
+//        Account account = resp.data
         def message = new Message(messageText: 'Message Text', account: savedAccount)
+        message.account.id = accountId
         def messageAsJson = message as JSON
-        def messageResp = restClient.post(path:'/accounts/${accountId}/messages',
+        def messagePath = "/accounts/" + accountId + "/messages" as String
+        def messageResp = restClient.post(path: messagePath,
                 body: messageAsJson as String, requestContentType: 'application/json')
         then:
         messageResp.status == 201
         messageResp.data.size() > 0
+        messageResp.data.account.id == accountId
         !!(messageId = messageResp.data.id)
 
     }
 
 
     def 'Save a message using account handle'() {
-
         when:
         def message = new Message(messageText: 'Message Text with handle', account: savedAccount)
+        message.account.id = accountId
         def messageAsJson = message as JSON
-        def messageResp = restClient.post(path: '/accounts/${accountHandle}/messages',
+        def path = "/accounts/" + accountHandle + "/messages"
+        def messageResp = restClient.post(path: path as String,
                 body: messageAsJson as String, requestContentType: 'application/json')
         then:
         messageResp.status == 201
         messageResp.data.size() > 0
+        messageResp.data.account.id == accountId
+
 
     }
 
@@ -80,17 +92,17 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
     }
 
-    def 'Search for Keyword' () {
-
+    def 'Search for Keyword'() {
         when:
-        def messageResp = restClient.get(path: '/accounts/${accountHandle}/messages/search?keyword=text',
+        String path = "/accounts/" + accountId + "/messages/search?keyword=text"
+        def messageResp = restClient.get(path: path,
                 requestContentType: 'application/json')
         then:
         messageResp.status == 200
         messageResp.data.size() == 2
         messageResp.data[0].account.id == accountId
-     //   messageResp.data[0].account.handle == accountHandle
-        messageResp.data[0].messageText.contains("text")
+        //   messageResp.data[0].account.handle == accountHandle
+        messageResp.data[0].messageText.toLowerCase().contains("text")
         messageResp.data[0].dateCreated != null
 
     }
