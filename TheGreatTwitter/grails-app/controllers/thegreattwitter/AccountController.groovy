@@ -13,7 +13,6 @@ class AccountController extends RestfulController<Account> {
     }
 
     @Override
-    @Transactional
     def show() {
         if (params.id) {
             def byHandle = Account.findByHandle(params.id)

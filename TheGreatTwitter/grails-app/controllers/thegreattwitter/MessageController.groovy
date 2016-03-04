@@ -7,7 +7,7 @@ import grails.transaction.Transactional
 class MessageController extends RestfulController<Message> {
 
     static responseFormats = ['json', 'xml']
-    static allowedMethods = [save: 'POST', getRecent: 'GET']
+    static allowedMethods = [save: 'POST', getRecent: 'GET', search:'GET']
 
     MessageController() {
         super(Message)
@@ -51,6 +51,29 @@ class MessageController extends RestfulController<Message> {
     def getRecent() {
         render Message.list(max: params.max ? params.max : 10, offset: params.offset,
                 sort: "dateCreated", order: "desc") as JSON
+
+    }
+
+    def search() {
+        if (!params.keyword) {
+            response.status = 500
+            respond new Expando(success: false, notification: 'Missing Keyword Parameter', errors: message.errors)
+            return
+        }
+       def keyword = params.keyword
+        def results =  Message.where {
+            messageText ilike keyword
+        }.find()
+        def accountId = params.accountId
+        def found = Account.findById(accountId)
+        def json = results as JSON
+        json.account.handle = found.handle
+        render json
+//        def results = Message.withCriteria {
+//            ilike  messageText, keyword
+//            join account
+//        }.find()
+//        render results as JSON
 
     }
 

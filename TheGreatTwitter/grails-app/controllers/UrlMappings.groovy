@@ -6,8 +6,7 @@ class UrlMappings {
                 // apply constraints here
             }
         }
-        //"/restaurants/$id/reservations" (resource: 'reservation')
-        //reservations (resource: 'reservation')
+
         "/"(view:"/index")
         "500"(view:'/error')
         "404"(view:'/notFound')
@@ -16,6 +15,7 @@ class UrlMappings {
         "/accounts"(resources: 'account') {
             "/messages"(resources: 'message')
             "/messages/recent"(resources: 'message', action: "getRecent", method: "GET")
+            "/messages/search"(resources: 'message', action: "search", method: "GET")
         }
 
     }

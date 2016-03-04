@@ -80,5 +80,20 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
     }
 
+    def 'Search for Keyword' () {
+
+        when:
+        def messageResp = restClient.get(path: '/accounts/${accountHandle}/messages/search?keyword=text',
+                requestContentType: 'application/json')
+        then:
+        messageResp.status == 200
+        messageResp.data.size() == 2
+        messageResp.data[0].account.id == accountId
+     //   messageResp.data[0].account.handle == accountHandle
+        messageResp.data[0].messageText.contains("text")
+        messageResp.data[0].dateCreated != null
+
+    }
+
 
 }
