@@ -62,19 +62,21 @@ class AccountResourceFunctionalSpec extends GebSpec {
         resp.data.accountName == 'Prince'
         resp.data.email == 'Prince@prince.com'
         resp.data.handle == '@Prince'
+        resp.data.followerCount == 0
+        resp.data.followingCount == 0
     }
 
-    def 'Get the created account by handle'() {
-        when:
-        def path = '/accounts/' + accountHandle
-        def resp = restClient.get(path: path as String)
-        then:
-        resp.status == 200
-        resp.data.id == accountId
-        resp.data.accountName == 'Prince'
-        resp.data.email == 'Prince@prince.com'
-        resp.data.handle == '@Prince'
-    }
+//    def 'Get the created account by handle'() {
+//        when:
+//        def path = '/accounts/' + accountHandle
+//        def resp = restClient.get(path: path as String)
+//        then:
+//        resp.status == 200
+//        resp.data.id == accountId
+//        resp.data.accountName == 'Prince'
+//        resp.data.email == 'Prince@prince.com'
+//        resp.data.handle == '@Prince'
+//    }
 
     def 'Follow an account'() {
         when:
