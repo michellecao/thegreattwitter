@@ -13,6 +13,7 @@ class UrlMappings {
 
         "/accounts"(resources: 'account') {
             "/follow"(controller: 'account', action: "follow", method: "POST")
+            "/followers"(controller: 'account', action: "getFollowers", method: "GET")
             "/messages"(resources: 'message')
             "/messages/recent"(controller: 'message', action: "getRecent", method: "GET")
             "/messages/search"(controller: 'message', action: "search", method: "GET")

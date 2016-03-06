@@ -6,10 +6,15 @@ import grails.transaction.Transactional
 
 class AccountController extends RestfulController<Account> {
     static responseFormats = ['json', 'xml']
-    static allowedMethods = [show: "GET", save: "POST", follow: "POST"]
+    static allowedMethods = [show: "GET", getFollowers: "GET", save: "POST", follow: "POST"]
 
     AccountController() {
         super(Account)
+    }
+
+    def index(Integer max) {
+        params.max = max ?: 10
+        respond Account.hasMany.followers.list(params), model: [offset: Account.hasMany.followers.list(params).size()]
     }
 
     @Override
@@ -85,5 +90,21 @@ class AccountController extends RestfulController<Account> {
         response.status = 200
         respond new Expando(success: true, account: account, follower: follower)
     }
+
+    def getFollowers() {
+        if (params.accountId) {
+            def byHandle = Account.findByHandle(params.accountId)
+            if (byHandle != null) {
+                Account account = Account.findByHandle(params.accountId)
+                response.status = 200
+                render account.followers as JSON
+            } else {
+                Account account = Account.findById(params.accountId)
+                response.status = 200
+                render account.followers as JSON
+            }
+        }
+    }
+    
 
 }
