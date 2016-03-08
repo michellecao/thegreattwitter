@@ -34,7 +34,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
         then:
         resp.status == 200
-        resp.data.size() == 0
+        resp.data.size() == 3
 
     }
 
