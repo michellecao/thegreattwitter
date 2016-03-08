@@ -8,7 +8,7 @@ import org.grails.web.json.JSONArray
 class MessageController extends RestfulController<Message> {
 
     static responseFormats = ['json', 'xml']
-    static allowedMethods = [save: 'POST', getRecent: 'GET', search: 'GET']
+    static allowedMethods = [save: 'POST', getRecent: 'GET', search: 'GET', getFeed: 'GET']
 
     MessageController() {
         super(Message)
@@ -59,7 +59,7 @@ class MessageController extends RestfulController<Message> {
     }
 
     def getRecent() {
-        render Message.list(max: params.max ? params.max : 10, offset: params.offset,
+        render Message.list(max: params.max ? params.max : 10, offset: params.offset ? params.offset : 0,
                 sort: "dateCreated", order: "desc") as JSON
 
     }
@@ -93,4 +93,22 @@ class MessageController extends RestfulController<Message> {
 
     }
 
+    def getFeed() {
+        if (params.accountId) {
+            def accountId = params.accountId
+            def follower = Account.findById(accountId)
+            def accounts = follower.following
+            def max = params.max ? params.max : 10
+            def offset = params.offset ? params.offset : 0
+            def results = Message.createCriteria().list(max: max, offset: offset) {
+                "in"("account", accounts)
+                order('dateCreated', 'desc')
+            }
+
+            render results as JSON
+        }
+
+    }
 }
+
+

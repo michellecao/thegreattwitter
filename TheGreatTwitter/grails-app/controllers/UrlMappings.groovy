@@ -30,6 +30,8 @@ class UrlMappings {
         "/accounts/$accountId/messages"(controller: 'message', action: "save", method: "POST")
         "/accounts/$accountId/messages/recent"(controller: 'message', action: "getRecent", method: "GET")
         "/accounts/messages/search?(.$format)?"(controller: 'message', action: "search", method: "GET")
+        "/accounts/$accountId/messages/feed?(.$format)?"(controller: 'message', action: "getFeed", method: "GET")
+
 
     }
 }

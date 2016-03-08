@@ -35,7 +35,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
         then:
         resp.status == 201
         resp.data.size() > 0
-        resp.data.id == 1
+        resp.data.id == 4
         resp.data.handle == "@Prince"
         !!(savedAccount = resp.data)
         !!(accountId = resp.data.id)
@@ -47,8 +47,6 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
         when:
         def path = '/accounts/' + accountId
-//        def resp = restClient.get(path: path as String)
-//        Account account = resp.data
         def message = new Message(messageText: 'Message Text', account: savedAccount)
         message.account.id = accountId
         def messageAsJson = message as JSON
@@ -99,13 +97,35 @@ class MessageResourceFunctionalSpec extends GebSpec {
                 requestContentType: 'application/json', query: [keyword: 'text'])
         then:
         messageResp.status == 200
-        messageResp.data.size() == 2
-        messageResp.data[0].account.id == accountId
-        messageResp.data[0].account.handle == accountHandle
-        messageResp.data[0].messageText.toLowerCase().contains("text")
-        messageResp.data[0].dateCreated != null
+        messageResp.data.size() == 4
+        messageResp.data[3].account.id == accountId
+        messageResp.data[3].account.handle == accountHandle
+        messageResp.data[3].messageText.toLowerCase().contains("text")
+        messageResp.data[3].dateCreated != null
 
     }
+    def getFeed() {
+        when:
+        def accountsResp = restClient.get(path: '/accounts')
+        then:
+        accountsResp.status == 200
+        accountsResp.data.size() > 0
+        def michelleId;
+        for (account in accountsResp.data) {
+            if (account.handle == "@michelle") {
+                michelleId = account.id
+                break
+            }
+        }
 
+        when:
+
+        String path = "/accounts/"+ michelleId + "/messages/feed"
+        def resp = restClient.get(path: path,
+                requestContentType: 'application/json')
+        then:
+        resp.status == 200
+        resp.data.size() > 0
+    }
 
 }
