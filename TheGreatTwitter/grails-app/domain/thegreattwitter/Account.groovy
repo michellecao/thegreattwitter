@@ -1,8 +1,5 @@
 package thegreattwitter
 
-import grails.rest.Resource
-
-@Resource (uri='/accounts', formats=['json', 'xml'])
 class Account {
 
     String accountName

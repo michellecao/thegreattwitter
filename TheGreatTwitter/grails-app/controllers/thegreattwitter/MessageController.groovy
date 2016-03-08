@@ -3,6 +3,7 @@ package thegreattwitter
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.transaction.Transactional
+import org.grails.web.json.JSONArray
 
 class MessageController extends RestfulController<Message> {
 
@@ -71,19 +72,24 @@ class MessageController extends RestfulController<Message> {
             return
         }
         def keyword = params.keyword
-        def results = Message.where {
-            messageText ilike keyword
-        }.find()
-        def accountId = params.accountId
-        def found = Account.findById(accountId)
-        def json = results as JSON
-        json.account.handle = found.handle
-        render json
-//        def results = Message.withCriteria {
-//            ilike  messageText, keyword
-//            join account
-//        }.find()
-//        render results as JSON
+        def query = Message.where {
+            messageText =~ "%${keyword}%"
+        }
+        def results = query.list()
+        JSONArray jArray = new JSONArray();
+        for (result in results) {
+            def found = Account.findById(result.account.id)
+            def json = result as JSON
+            def jsonMessageObject = JSON.parse(json.toString())
+            def jsonAccountObject = JSON.parse(json.toString()).account
+            jsonAccountObject.put("handle", found.handle)
+            jsonMessageObject.putAt("account", jsonAccountObject)
+            jArray.put(jsonMessageObject)
+
+        }
+
+        render jArray as JSON
+
 
     }
 

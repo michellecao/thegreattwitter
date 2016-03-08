@@ -21,10 +21,10 @@ class AccountController extends RestfulController<Account> {
     def show() {
         int followerCount = 0
         int followingCount = 0
-        if (params.id) {
-            def byHandle = Account.findByHandle(params.id)
+        if (params.accountId) {
+            def byHandle = Account.findByHandle(params.accountId)
             if (byHandle != null) {
-                Account account = Account.findByHandle(params.id)
+                Account account = Account.findByHandle(params.accountId)
                 followerCount = account.getFollowers().size()
                 followingCount = account.getFollowing().size()
                 def jsonByHandle = account as JSON
@@ -34,7 +34,7 @@ class AccountController extends RestfulController<Account> {
 
                 render jsonObject as JSON
             } else {
-                Account account = Account.findById(params.id)
+                Account account = Account.findById(params.accountId)
                 followerCount = account.getFollowers().size()
                 followingCount = account.getFollowing().size()
                 def jsonAccount = account as JSON
