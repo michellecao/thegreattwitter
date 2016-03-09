@@ -120,5 +120,4 @@ class AccountResourceFunctionalSpec extends GebSpec {
         resp.data[0].id == bobAccountId
     }
 
-
 }

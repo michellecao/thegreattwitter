@@ -59,7 +59,10 @@ class MessageController extends RestfulController<Message> {
     }
 
     def getRecent() {
-        render Message.list(max: params.max ? params.max : 10, offset: params.offset ? params.offset : 0,
+        def accountId = params.accountId
+        render Message.where {
+            account.id == accountId
+        }.list(max: params.max ? params.max : 10, offset: params.offset ? params.offset : 0,
                 sort: "dateCreated", order: "desc") as JSON
 
     }

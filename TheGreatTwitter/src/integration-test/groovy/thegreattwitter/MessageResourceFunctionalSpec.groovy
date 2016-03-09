@@ -47,7 +47,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
         when:
         def path = '/accounts/' + accountId
-        def message = new Message(messageText: 'Message Text', account: savedAccount)
+        def message = new Message(messageText: 'Message Functional Text', account: savedAccount)
         message.account.id = accountId
         def messageAsJson = message as JSON
         def messagePath = "/accounts/" + accountId + "/messages" as String
@@ -74,58 +74,74 @@ class MessageResourceFunctionalSpec extends GebSpec {
         messageResp.status == 201
         messageResp.data.size() > 0
         messageResp.data.account.id == accountId
-
-
     }
 
     def 'Get recent messages'() {
-
         when:
-        def messageResp = restClient.get(path: '/accounts/${accountHandle}/messages/recent',
+        def message = new Message(messageText: 'Message Text', account: savedAccount)
+        message.account.id = accountId
+        def messageAsJson = message as JSON
+        def messagePath = "/accounts/" + accountId + "/messages" as String
+        for(int i = 0; i < 14; i++) {
+            restClient.post(path: messagePath,
+                    body: messageAsJson as String, requestContentType: 'application/json')
+        }
+        def path = '/accounts/' + accountId + '/messages/recent'
+        def messageResp = restClient.get(path: path,
                 requestContentType: 'application/json')
 
         then:
         messageResp.status == 200
-        messageResp.data.size() > 0
-
+        messageResp.data.size() == 10
     }
 
     def 'Search for Keyword'() {
         when:
         String path = "/accounts/messages/search"
         def messageResp = restClient.get(path: path,
-                requestContentType: 'application/json', query: [keyword: 'text'])
+                requestContentType: 'application/json', query: [keyword: 'functional'])
         then:
         messageResp.status == 200
-        messageResp.data.size() == 4
-        messageResp.data[3].account.id == accountId
-        messageResp.data[3].account.handle == accountHandle
-        messageResp.data[3].messageText.toLowerCase().contains("text")
-        messageResp.data[3].dateCreated != null
+        messageResp.data.size() == 1
+        messageResp.data[0].account.id == accountId
+        messageResp.data[0].account.handle == accountHandle
+        messageResp.data[0].messageText.toLowerCase().contains("functional")
+        messageResp.data[0].dateCreated != null
 
     }
+
     def getFeed() {
         when:
         def accountsResp = restClient.get(path: '/accounts')
         then:
         accountsResp.status == 200
         accountsResp.data.size() > 0
+
+        when:
         def michelleId;
+        def michelleAccount;
         for (account in accountsResp.data) {
             if (account.handle == "@michelle") {
                 michelleId = account.id
+                michelleAccount = account
                 break
             }
         }
+        def followPath = '/accounts/' + accountId + '/follow'
+        def michelleJson = michelleAccount as JSON
 
+        def updateResp = restClient.post(path: followPath as String, body: michelleJson as String,
+                requestContentType: 'application/json')
+        then:
+        updateResp.status == 200
+        updateResp.data.size() > 0
         when:
-
         String path = "/accounts/"+ michelleId + "/messages/feed"
         def resp = restClient.get(path: path,
                 requestContentType: 'application/json')
         then:
         resp.status == 200
-        resp.data.size() > 0
+        resp.data.size() == 10
     }
 
 }
