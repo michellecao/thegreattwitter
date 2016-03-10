@@ -5,6 +5,8 @@ import grails.rest.RestfulController
 import grails.transaction.Transactional
 import org.grails.web.json.JSONArray
 
+import java.text.SimpleDateFormat
+
 class MessageController extends RestfulController<Message> {
 
     static responseFormats = ['json', 'xml']
@@ -99,12 +101,18 @@ class MessageController extends RestfulController<Message> {
     def getFeed() {
         if (params.accountId) {
             def accountId = params.accountId
+            String dateCreated = params.dateCreated
+            def date = new Date().parse("yyyy-MM-dd", dateCreated)
             def follower = Account.findById(accountId)
             def accounts = follower.following
             def max = params.max ? params.max : 10
             def offset = params.offset ? params.offset : 0
+
             def results = Message.createCriteria().list(max: max, offset: offset) {
                 "in"("account", accounts)
+                and {
+                    gt('dateCreated', date)
+                }
                 order('dateCreated', 'desc')
             }
 

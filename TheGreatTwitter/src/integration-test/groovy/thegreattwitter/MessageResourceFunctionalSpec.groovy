@@ -138,7 +138,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
         when:
         String path = "/accounts/"+ michelleId + "/messages/feed"
         def resp = restClient.get(path: path,
-                requestContentType: 'application/json')
+                requestContentType: 'application/json', query:[dateCreated: "2016-03-09"])
         then:
         resp.status == 200
         resp.data.size() == 10
