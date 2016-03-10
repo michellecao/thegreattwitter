@@ -53,18 +53,42 @@ class AccountResourceFunctionalSpec extends GebSpec {
         !!(accountHandle = resp.data.handle)
     }
 
-    def 'Save an invalid account should fail'() {
+
+    def 'Saving account with invalid password should fail'() {
         when:
         def account = new Account(accountName: "Test", email: "Test@prince.com",
-                password: "minneapolis1234", handle: "@Test")
+                password: password, handle: "@Test")
         def json = account as JSON
         restClient.post(path: '/accounts', body: json as String, requestContentType: 'application/json')
-
         then:
         HttpResponseException problem = thrown(HttpResponseException)
         problem.statusCode == 400
         problem.message.contains('Bad Request')
 
+        where:
+        description                          | password
+        'Password is less than 8 chars'      | 'Test123'
+        'Password is more than 16 chars'     | 'Test12345678912345'
+        'Password without a digit'           | 'TestTestTest'
+        'Password without upper case letter' | 'test1234556777'
+        'Password without lower case letter' | 'TEST1234556777'
+        'Password without letters'           | '1234556777'
+        'Password with only special chars'   | '%^&*&*'
+        'Password is blank'                  | ''
+        'Password is null'                   | null
+
+    }
+
+    def 'Saving a duplicate account should fail'() {
+        when:
+        def account = new Account (accountName: "michelle", email: "michelle@test.com",
+                password: "Minneapolis1234", handle: "@michelle")
+        def json = account as JSON
+        restClient.post(path: '/accounts', body: json as String, requestContentType: 'application/json')
+        then:
+        HttpResponseException problem = thrown(HttpResponseException)
+        problem.statusCode == 400
+        problem.message.contains('Bad Request')
     }
 
     def 'Get the created account by id'() {

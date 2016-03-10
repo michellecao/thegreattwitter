@@ -66,20 +66,6 @@ class AccountController extends RestfulController<Account> {
                 message = 'Bad request'
             }
             return
-
-        } else {
-            def isNewAccount = account.id == null
-            if (isNewAccount) {
-                def duplicateAccount = Account.findByHandle(account.handle)
-                if (duplicateAccount) {
-                    response.status = 409
-                    render(contentType: 'application/json') {
-                        error = response.status
-                        message = 'Duplicate Account'
-                    }
-                    return
-                }
-            }
         }
         account.save(flush: true)
         response.status = 201

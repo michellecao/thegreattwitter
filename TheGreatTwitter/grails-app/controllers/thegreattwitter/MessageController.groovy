@@ -5,8 +5,6 @@ import grails.rest.RestfulController
 import grails.transaction.Transactional
 import org.grails.web.json.JSONArray
 
-import java.text.SimpleDateFormat
-
 class MessageController extends RestfulController<Message> {
 
     static responseFormats = ['json', 'xml']
@@ -31,29 +29,35 @@ class MessageController extends RestfulController<Message> {
     }
 
     @Transactional
-    def save(Message message) {
-        //TODO handle errors better
-        if (!message) {
-            response.status = 404
-            respond new Expando(success: false, notification: 'Message not provided')
+    def save() {
+        def messageJSON = request.JSON
+        if (!messageJSON || !messageJSON.messageText || !params.accountId) {
+            response.status = 400
+            render(contentType: 'application/json') {
+                error = response.status
+                message = 'Bad request'
+            }
             return
         }
-
+        def account;
         if (params.accountId) {
             def byHandle = Account.findByHandle(params.accountId)
             if (byHandle != null) {
-                message.account = byHandle
-            } else {
-                message.account = Account.findById(params.accountId)
+                account = byHandle
+            } else if ((params.accountId as String).isNumber()) {
+                account = Account.findById(params.accountId)
+            }
+            if (!account) {
+                response.status = 404
+                render(contentType: 'application/json') {
+                    error = response.status
+                    message = 'Account Not Found'
+                }
+                return
             }
         }
-
-        if (message.hasErrors()) {
-            response.status = 500
-            respond new Expando(success: false, notification: 'has errors', errors: message.errors)
-            return
-        }
-
+        def messageText = messageJSON.messageText as String
+        def message = new Message(messageText: messageText, account: account)
         message.save(flush: true, failOnError: true)
         response.status = 201
         render message as JSON
