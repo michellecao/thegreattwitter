@@ -31,7 +31,6 @@ class AccountController extends RestfulController<Account> {
                 def jsonObject = JSON.parse(jsonByHandle.toString())
                 jsonObject.put("followerCount", followerCount)
                 jsonObject.put("followingCount", followingCount)
-
                 render jsonObject as JSON
             } else {
                 Account account = Account.findById(params.accountId)
@@ -41,7 +40,6 @@ class AccountController extends RestfulController<Account> {
                 def jsonObject = JSON.parse(jsonAccount.toString())
                 jsonObject.put("followerCount", followerCount)
                 jsonObject.put("followingCount", followingCount)
-
                 render jsonObject as JSON
             }
         } else {
@@ -55,16 +53,35 @@ class AccountController extends RestfulController<Account> {
         if (!account) {
             response.status = 404
             respond new Expando(success: false, message: 'Account not provided')
-            return
         }
 
-        if (account.hasErrors()) {
-            response.status = 500
-            respond new Expando(success: false, message: 'Account has errors', errors: account.errors)
+        if (account.hasErrors() ||
+                account?.accountName == null ||
+                account?.handle == null ||
+                account?.email == null ||
+                account?.password == null) {
+            response.status = 400
+            render(contentType: 'application/json') {
+                error = response.status
+                message = 'Bad request'
+            }
             return
-        }
 
-        account.save(flush: true, failOnError: true)
+        } else {
+            def isNewAccount = account.id == null
+            if (isNewAccount) {
+                def duplicateAccount = Account.findByHandle(account.handle)
+                if (duplicateAccount) {
+                    response.status = 409
+                    render(contentType: 'application/json') {
+                        error = response.status
+                        message = 'Duplicate Account'
+                    }
+                    return
+                }
+            }
+        }
+        account.save(flush: true)
         response.status = 201
         render account as JSON
         respond new Expando(success: true, message: 'Account created', account: account)
@@ -101,10 +118,11 @@ class AccountController extends RestfulController<Account> {
             } else {
                 Account account = Account.findById(params.accountId)
                 response.status = 200
-                render account.followers as JSON
+                def followers = account.followers
+                render followers as JSON
             }
         }
     }
-    
+
 
 }

@@ -3,6 +3,7 @@ package thegreattwitter
 import geb.spock.GebSpec
 import grails.converters.JSON
 import grails.test.mixin.integration.Integration
+import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Stepwise
@@ -50,6 +51,20 @@ class AccountResourceFunctionalSpec extends GebSpec {
         resp.data.size() > 0
         !!(accountId = resp.data.id)
         !!(accountHandle = resp.data.handle)
+    }
+
+    def 'Save an invalid account should fail'() {
+        when:
+        def account = new Account(accountName: "Test", email: "Test@prince.com",
+                password: "minneapolis1234", handle: "@Test")
+        def json = account as JSON
+        restClient.post(path: '/accounts', body: json as String, requestContentType: 'application/json')
+
+        then:
+        HttpResponseException problem = thrown(HttpResponseException)
+        problem.statusCode == 400
+        problem.message.contains('Bad Request')
+
     }
 
     def 'Get the created account by id'() {
@@ -111,13 +126,29 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
     }
 
-    def 'Get Followers for account' () {
+    def 'Get Followers for account'() {
         when:
-        def path = '/accounts/' + accountId + '/followers'
+        def accountsResp = restClient.get(path: '/accounts')
+
+        then:
+        accountsResp.status == 200
+        accountsResp.data.size() > 0
+
+        when:
+        def mikeId;
+
+        for (account in accountsResp.data) {
+            if (account.handle == "@mike") {
+                mikeId = account.id
+                break
+            }
+        }
+        def path = '/accounts/' + mikeId + '/followers'
         def resp = restClient.get(path: path as String)
         then:
         resp.status == 200
-        resp.data[0].id == bobAccountId
+        resp.data[0].id == 1
+        resp.data[0].handle == "@michelle"
     }
 
 }
