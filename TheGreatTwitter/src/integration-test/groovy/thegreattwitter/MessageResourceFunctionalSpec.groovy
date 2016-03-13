@@ -116,6 +116,26 @@ class MessageResourceFunctionalSpec extends GebSpec {
         messageResp.data.size() == 10
     }
 
+    def 'Get recent messages with a set max and offset'() {
+        when:
+        def path = '/accounts/' + accountId + '/messages/recent'
+        def resp = restClient.get(path: path,
+                requestContentType: 'application/json', params: [max: 100, offset: 0])
+
+        then:
+        resp.status == 200
+        resp.data.size() == 16
+
+        when:
+        def messageResp = restClient.get(path: path,
+                requestContentType: 'application/json', params: [max: 3, offset: 1])
+
+        then:
+        messageResp.status == 200
+        messageResp.data.size() == 3
+
+    }
+
     def 'Search for Keyword'() {
         when:
         String path = "/accounts/messages/search"
@@ -129,6 +149,16 @@ class MessageResourceFunctionalSpec extends GebSpec {
         messageResp.data[0].messageText.toLowerCase().contains("functional")
         messageResp.data[0].dateCreated != null
 
+    }
+
+    def 'Search for Keyword that doesnt exist' () {
+        when:
+        String path = "/accounts/messages/search"
+        def messageResp = restClient.get(path: path,
+                requestContentType: 'application/json', query: [keyword: 'tree'])
+        then:
+        messageResp.status == 200
+        messageResp.data.size() == 0
     }
 
     def 'Get Feed for a specific account'() {
