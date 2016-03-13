@@ -32,7 +32,7 @@ class AccountController extends RestfulController<Account> {
                 jsonObject.put("followerCount", followerCount)
                 jsonObject.put("followingCount", followingCount)
                 render jsonObject as JSON
-            } else {
+            } else if ((params.accountId as String).isNumber()) {
                 Account account = Account.findById(params.accountId)
                 followerCount = account.getFollowers().size()
                 followingCount = account.getFollowing().size()
@@ -81,12 +81,22 @@ class AccountController extends RestfulController<Account> {
         if (follower.getErrors().errorCount > 0) {
             response.status = 500
         }
-        def accountId = params.accountId
-        Account account = Account.findById(accountId)
-        if (!account) {
-            response.status = 404
-            respond new Expando(success: false, message: 'Account not provided')
-            return
+        def account;
+        if (params.accountId) {
+            def byHandle = Account.findByHandle(params.accountId)
+            if (byHandle != null) {
+                account = byHandle
+            } else if ((params.accountId as String).isNumber()) {
+                account = Account.findById(params.accountId)
+            }
+            if (!account) {
+                response.status = 404
+                render(contentType: 'application/json') {
+                    error = response.status
+                    message = 'Account Not Found'
+                }
+                return
+            }
         }
         account.addToFollowers(follower)
         follower.addToFollowing(account)
@@ -101,7 +111,7 @@ class AccountController extends RestfulController<Account> {
                 Account account = Account.findByHandle(params.accountId)
                 response.status = 200
                 render account.followers as JSON
-            } else {
+            } else if ((params.accountId as String).isNumber()) {
                 Account account = Account.findById(params.accountId)
                 response.status = 200
                 def followers = account.followers
