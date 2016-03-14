@@ -19,29 +19,30 @@ class AccountController extends RestfulController<Account> {
 
     @Override
     def show() {
-        int followerCount = 0
-        int followingCount = 0
+
+        def account;
         if (params.accountId) {
             def byHandle = Account.findByHandle(params.accountId)
             if (byHandle != null) {
-                Account account = Account.findByHandle(params.accountId)
-                followerCount = account.getFollowers().size()
-                followingCount = account.getFollowing().size()
-                def jsonByHandle = account as JSON
-                def jsonObject = JSON.parse(jsonByHandle.toString())
-                jsonObject.put("followerCount", followerCount)
-                jsonObject.put("followingCount", followingCount)
-                render jsonObject as JSON
+                account = byHandle
             } else if ((params.accountId as String).isNumber()) {
-                Account account = Account.findById(params.accountId)
-                followerCount = account.getFollowers().size()
-                followingCount = account.getFollowing().size()
-                def jsonAccount = account as JSON
-                def jsonObject = JSON.parse(jsonAccount.toString())
-                jsonObject.put("followerCount", followerCount)
-                jsonObject.put("followingCount", followingCount)
-                render jsonObject as JSON
+                account = Account.findById(params.accountId)
             }
+            if (!account) {
+                response.status = 404
+                render(contentType: 'application/json') {
+                    error = response.status
+                    message = 'Account Not Found'
+                }
+                return
+            }
+            int followerCount = account.getFollowers().size()
+            int followingCount = account.getFollowing().size()
+            def jsonAccount = account as JSON
+            def jsonObject = JSON.parse(jsonAccount.toString())
+            jsonObject.put("followerCount", followerCount)
+            jsonObject.put("followingCount", followingCount)
+            render jsonObject as JSON
         } else {
             render Account.list() as JSON
         }

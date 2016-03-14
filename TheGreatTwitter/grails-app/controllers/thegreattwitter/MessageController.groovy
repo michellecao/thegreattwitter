@@ -103,11 +103,25 @@ class MessageController extends RestfulController<Message> {
     }
 
     def getFeed() {
+        def follower;
         if (params.accountId) {
-            def accountId = params.accountId
+            def byHandle = Account.findByHandle(params.accountId)
+            if (byHandle != null) {
+                follower = byHandle
+            } else if ((params.accountId as String).isNumber()) {
+                follower = Account.findById(params.accountId)
+            }
+            if (!follower) {
+                response.status = 404
+                render(contentType: 'application/json') {
+                    error = response.status
+                    message = 'Account Not Found'
+                }
+                return
+            }
+
             String dateCreated = params.dateCreated
             def date = new Date().parse("yyyy-MM-dd", dateCreated)
-            def follower = Account.findById(accountId)
             def accounts = follower.following
             def max = params.max ? params.max : 10
             def offset = params.offset ? params.offset : 0
