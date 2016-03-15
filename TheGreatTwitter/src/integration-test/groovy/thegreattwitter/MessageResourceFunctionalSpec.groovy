@@ -29,16 +29,15 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
     def 'Save an account'() {
         when:
-        def account = new Account(accountName: "Prince", email: "Prince@prince.com",
-                password: "Minneapolis1234", handle: "@Prince")
+        def account = new Account(accountName: "newUser", email: "newUser@newUser.com",
+                password: "Minneapolis1234", handle: "@newUser")
         def json = account as JSON
         def resp = restClient.post(path: '/accounts', body: json as String, requestContentType: 'application/json')
 
         then:
         resp.status == 201
         resp.data.size() > 0
-        resp.data.id == 4
-        resp.data.handle == "@Prince"
+        resp.data.handle == "@newUser"
         !!(savedAccount = resp.data)
         !!(accountId = resp.data.id)
         !!(accountHandle = resp.data.handle)
